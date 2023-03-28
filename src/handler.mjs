@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable linebreak-style */
 /* eslint-disable no-shadow */
 /* eslint-disable linebreak-style */
@@ -20,7 +21,7 @@ const addBook = (request, h) => {
   if (pageCount < readPage) {
     const response = h.response({
       status: 'fail',
-      message: 'Gagal menambahkan buku.',
+      message: 'Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount',
     });
     response.code(400);
 
@@ -46,9 +47,9 @@ const addBook = (request, h) => {
     updatedAt,
   };
 
-  push(newBook);
+  books.push(newBook);
 
-  const isSuccess = some((book) => book.id === id);
+  const isSuccess = books.some((book) => book.id === id);
 
   return isSuccess ?
     h.response({
@@ -67,7 +68,7 @@ const addBook = (request, h) => {
 const getAllBooks = (request, h) => {
   const {name, reading, finished} = request.query;
 
-  const filteredBooks = filter((book) => {
+  const filteredBooks = books.filter((book) => {
     if (name && !book.name.toLowerCase().includes(name.toLowerCase())) {
       return false;
     }
@@ -76,11 +77,7 @@ const getAllBooks = (request, h) => {
       return false;
     }
 
-    if (finished !== undefined && book.finished !== !!Number(finished)) {
-      return false;
-    }
-
-    return true;
+    return !(finished !== undefined && book.finished !== !!Number(finished));
   });
 
   const response = h.response({
@@ -98,7 +95,7 @@ const getAllBooks = (request, h) => {
 
 const getBookById = (request, h) => {
   const {id} = request.params;
-  const book = find((b) => b.id === id);
+  const book = books.find((b) => b.id === id);
 
   if (book) {
     return {
@@ -121,7 +118,7 @@ const editBookById = (request, h) => {
     name, year, author, summary, publisher, pageCount, readPage, reading,
   } = request.payload;
   const updatedAt = new Date().toISOString();
-  const index = findIndex((book) => book.id === id);
+  const index = books.findIndex((book) => book.id === id);
 
   if (index !== -1) {
     if (name === undefined) {
@@ -137,7 +134,7 @@ const editBookById = (request, h) => {
     if (pageCount < readPage) {
       const response = h.response({
         status: 'fail',
-        message: 'Gagal memperbarui buku.',
+        message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
       });
       response.code(400);
 
@@ -178,10 +175,10 @@ const editBookById = (request, h) => {
 const deleteBookById = (request, h) => {
   const {id} = request.params;
 
-  const index = findIndex((note) => note.id === id);
+  const index = books.findIndex((note) => note.id === id);
 
   if (index !== -1) {
-    splice(index, 1);
+    books.splice(index, 1);
     const response = h.response({
       status: 'success',
       message: 'Buku berhasil dihapus',
